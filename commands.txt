@@ -1,0 +1,8 @@
+goose postgres "postgres://vishals:pgsql@localhost:5432/logsdb" up
+goose postgres "postgres://vishals:pgsql@localhost:5432/logsdb" down
+goose postgres "postgres://vishals:pgsql@localhost:5432/logsdb" status
+
+pgcli -h localhost -p 5432 -U vishals -d logsdb
+
+docker compose up -d 
+docker compose down

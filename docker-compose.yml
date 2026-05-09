@@ -1,0 +1,23 @@
+services:
+  db:
+    image: postgres
+    restart: always
+    volumes:
+      - db_data:/var/lib/postgresql
+    ports:
+      - 5432:5432 # make sure you don't have another container running on 5432
+
+    environment:
+      - POSTGRES_DB=logsdb
+      - POSTGRES_USER=vishals
+      - POSTGRES_PASSWORD=pgsql
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+volumes:
+  db_data:
+    name: "db_logs_volume"
