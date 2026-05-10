@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/sudovishal/vortexlog/internal/api"
 )
@@ -17,15 +17,24 @@ func main() {
 	dbUrl := os.Getenv("DB_URL")
 
 	ctx := context.Background()
-	conn, err := pgx.Connect(ctx, dbUrl)
+	
+	// Create a connection pool instead of a single connection
+	pool, err := pgxpool.New(ctx, dbUrl)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Unable to create connection pool: %v\n", err)
 		os.Exit(1)
 	}
-	defer conn.Close(ctx)
+	defer pool.Close()
+
+	// Verify the connection is working
+	if err := pool.Ping(ctx); err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to ping database: %v\n", err)
+		os.Exit(1)
+	}
+	fmt.Println("Successfully connected to database pool!")
 
 	// Initialize the queries object
-	// queries := database.New(conn)
+	// queries := database.New(pool)
 
 	incomingChan := make(chan api.LogPayload, 100)
 

@@ -1,3 +1,12 @@
 data/
-data/db/
 .env
+main
+tmp/
+vortexlog 
+
+# OS specific
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
