@@ -3,7 +3,9 @@ data/
 main
 tmp/
 vortexlog 
-
+context.md
+commands.txt
+    
 # OS specific
 .DS_Store
 
