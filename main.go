@@ -5,10 +5,15 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"os/signal"
+	"sync"
+	"syscall"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/sudovishal/vortexlog/internal/api"
+	"github.com/sudovishal/vortexlog/internal/worker"
 )
 
 func main() {
@@ -17,7 +22,7 @@ func main() {
 	dbUrl := os.Getenv("DB_URL")
 
 	ctx := context.Background()
-	
+
 	// Create a connection pool instead of a single connection
 	pool, err := pgxpool.New(ctx, dbUrl)
 	if err != nil {
@@ -41,15 +46,41 @@ func main() {
 	// Register HTTP handler
 	http.HandleFunc("POST /logs", api.HandleLogs(incomingChan))
 
+	var wg sync.WaitGroup
+	worker.StartWorkerPool(incomingChan, &wg, pool)
+
+	// Graceful shutdown
+	server := &http.Server{
+		Addr: ":3001",
+	}
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
 	go func() {
-		// This loop runs forever in the background, pulling items off the conveyor belt
-		for log := range incomingChan {
-			fmt.Printf("Worker pulled a log off the channel: %+v\n", log.Message)
+		fmt.Println("Server is listening on port 3001...")
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			fmt.Fprintf(os.Stderr, "Server failed: %v\n", err)
 		}
 	}()
 
-	fmt.Println("Server is listening on port 3001...")
-	if err := http.ListenAndServe(":3001", nil); err != nil {
-		fmt.Fprintf(os.Stderr, "Server failed: %v\n", err)
+	sig := <-quit
+	fmt.Printf("Received signal: %v\n", sig)
+
+	// Stop accepting new requests
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	if err := server.Shutdown(ctx); err != nil {
+		fmt.Fprintf(os.Stderr, "Server shutdown failed: %v\n", err)
+		os.Exit(1)
 	}
+
+	// Stop workers
+	close(incomingChan)
+	fmt.Println("Waiting for workers to finish...")
+	wg.Wait()
+
+	// Close DB pool after workers are done
+	pool.Close()
+	fmt.Println("Server exited gracefully")
 }

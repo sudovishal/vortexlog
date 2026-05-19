@@ -5,6 +5,7 @@ tmp/
 vortexlog 
 context.md
 commands.txt
+project_state.md
     
 # OS specific
 .DS_Store

@@ -14,4 +14,5 @@ type Log struct {
 	LogLevel    string
 	Message     string
 	CreatedAt   pgtype.Timestamptz
+	IngestedAt  pgtype.Timestamptz
 }

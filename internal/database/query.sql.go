@@ -7,22 +7,30 @@ package database
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createLog = `-- name: CreateLog :one
-INSERT INTO logs (service_name, log_level, message)
-VALUES ($1, $2, $3)
-RETURNING id, service_name, log_level, message, created_at
+INSERT INTO logs (service_name, log_level, message, created_at)
+VALUES ($1, $2, $3, $4)
+RETURNING id, service_name, log_level, message, created_at, ingested_at
 `
 
 type CreateLogParams struct {
 	ServiceName string
 	LogLevel    string
 	Message     string
+	CreatedAt   pgtype.Timestamptz
 }
 
 func (q *Queries) CreateLog(ctx context.Context, arg CreateLogParams) (Log, error) {
-	row := q.db.QueryRow(ctx, createLog, arg.ServiceName, arg.LogLevel, arg.Message)
+	row := q.db.QueryRow(ctx, createLog,
+		arg.ServiceName,
+		arg.LogLevel,
+		arg.Message,
+		arg.CreatedAt,
+	)
 	var i Log
 	err := row.Scan(
 		&i.ID,
@@ -30,6 +38,14 @@ func (q *Queries) CreateLog(ctx context.Context, arg CreateLogParams) (Log, erro
 		&i.LogLevel,
 		&i.Message,
 		&i.CreatedAt,
+		&i.IngestedAt,
 	)
 	return i, err
+}
+
+type CreateLogsParams struct {
+	ServiceName string
+	LogLevel    string
+	Message     string
+	CreatedAt   pgtype.Timestamptz
 }

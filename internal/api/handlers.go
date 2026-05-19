@@ -6,14 +6,15 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/sudovishal/vortexlog/internal/database"
 )
 
 type LogPayload struct {
-	ServiceName string `json:"service_name"`
-	LogLevel    string `json:"log_level"`
-	Message     string `json:"message"`
-	// Timestamp   time.Time `json:"timestamp"`
+	ServiceName string             `json:"service_name"`
+	LogLevel    string             `json:"log_level"`
+	Message     string             `json:"message"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
 }
 
 func sendSampleLog(ctx context.Context, queries *database.Queries, payload LogPayload) error {
