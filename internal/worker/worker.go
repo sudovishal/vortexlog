@@ -2,10 +2,12 @@ package worker
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sudovishal/vortexlog/internal/api"
 	"github.com/sudovishal/vortexlog/internal/database"
@@ -79,6 +81,19 @@ func flushBatch(queries *database.Queries, batch []api.LogPayload, workerID int)
 	params := make([]database.CreateLogsParams, len(batch))
 	// 2. Loop using the index 'i' so we can assign to the correct slot in our new slice
 	for i, log := range batch {
+		var traceID pgtype.Text
+		if log.TraceID != nil {
+			traceID = pgtype.Text{String: *log.TraceID, Valid: true}
+		}
+
+		var metadataBytes []byte
+		if log.Metadata != nil {
+			var err error
+			metadataBytes, err = json.Marshal(log.Metadata)
+			if err != nil {
+				fmt.Printf("Worker %d failed to marshal metadata for log: %v\n", workerID, err)
+			}
+		}
 
 		// 3. Create the struct using its actual Type Name: database.CreateLogsParams
 		params[i] = database.CreateLogsParams{
@@ -86,6 +101,8 @@ func flushBatch(queries *database.Queries, batch []api.LogPayload, workerID int)
 			LogLevel:    log.LogLevel,
 			Message:     log.Message,
 			CreatedAt:   log.CreatedAt,
+			TraceID:     traceID,
+			Metadata:    metadataBytes,
 		}
 	}
 	// 4. Execute the high-speed Batch Insert!

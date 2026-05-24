@@ -33,6 +33,8 @@ func (r iteratorForCreateLogs) Values() ([]interface{}, error) {
 		r.rows[0].LogLevel,
 		r.rows[0].Message,
 		r.rows[0].CreatedAt,
+		r.rows[0].TraceID,
+		r.rows[0].Metadata,
 	}, nil
 }
 
@@ -41,5 +43,5 @@ func (r iteratorForCreateLogs) Err() error {
 }
 
 func (q *Queries) CreateLogs(ctx context.Context, arg []CreateLogsParams) (int64, error) {
-	return q.db.CopyFrom(ctx, []string{"logs"}, []string{"service_name", "log_level", "message", "created_at"}, &iteratorForCreateLogs{rows: arg})
+	return q.db.CopyFrom(ctx, []string{"logs"}, []string{"service_name", "log_level", "message", "created_at", "trace_id", "metadata"}, &iteratorForCreateLogs{rows: arg})
 }

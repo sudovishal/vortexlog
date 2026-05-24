@@ -15,4 +15,61 @@ type Log struct {
 	Message     string
 	CreatedAt   pgtype.Timestamptz
 	IngestedAt  pgtype.Timestamptz
+	TraceID     pgtype.Text
+	Metadata    []byte
+}
+
+type LogsY2026m05W1 struct {
+	ID          int64
+	ServiceName string
+	LogLevel    string
+	Message     string
+	CreatedAt   pgtype.Timestamptz
+	IngestedAt  pgtype.Timestamptz
+	TraceID     pgtype.Text
+	Metadata    []byte
+}
+
+type LogsY2026m05W2 struct {
+	ID          int64
+	ServiceName string
+	LogLevel    string
+	Message     string
+	CreatedAt   pgtype.Timestamptz
+	IngestedAt  pgtype.Timestamptz
+	TraceID     pgtype.Text
+	Metadata    []byte
+}
+
+type LogsY2026m05W3 struct {
+	ID          int64
+	ServiceName string
+	LogLevel    string
+	Message     string
+	CreatedAt   pgtype.Timestamptz
+	IngestedAt  pgtype.Timestamptz
+	TraceID     pgtype.Text
+	Metadata    []byte
+}
+
+type LogsY2026m05W4 struct {
+	ID          int64
+	ServiceName string
+	LogLevel    string
+	Message     string
+	CreatedAt   pgtype.Timestamptz
+	IngestedAt  pgtype.Timestamptz
+	TraceID     pgtype.Text
+	Metadata    []byte
+}
+
+type LogsY2026m05W5 struct {
+	ID          int64
+	ServiceName string
+	LogLevel    string
+	Message     string
+	CreatedAt   pgtype.Timestamptz
+	IngestedAt  pgtype.Timestamptz
+	TraceID     pgtype.Text
+	Metadata    []byte
 }

@@ -12,9 +12,9 @@ import (
 )
 
 const createLog = `-- name: CreateLog :one
-INSERT INTO logs (service_name, log_level, message, created_at)
-VALUES ($1, $2, $3, $4)
-RETURNING id, service_name, log_level, message, created_at, ingested_at
+INSERT INTO logs (service_name, log_level, message, created_at, trace_id, metadata)
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING id, service_name, log_level, message, created_at, ingested_at, trace_id, metadata
 `
 
 type CreateLogParams struct {
@@ -22,6 +22,8 @@ type CreateLogParams struct {
 	LogLevel    string
 	Message     string
 	CreatedAt   pgtype.Timestamptz
+	TraceID     pgtype.Text
+	Metadata    []byte
 }
 
 func (q *Queries) CreateLog(ctx context.Context, arg CreateLogParams) (Log, error) {
@@ -30,6 +32,8 @@ func (q *Queries) CreateLog(ctx context.Context, arg CreateLogParams) (Log, erro
 		arg.LogLevel,
 		arg.Message,
 		arg.CreatedAt,
+		arg.TraceID,
+		arg.Metadata,
 	)
 	var i Log
 	err := row.Scan(
@@ -39,6 +43,8 @@ func (q *Queries) CreateLog(ctx context.Context, arg CreateLogParams) (Log, erro
 		&i.Message,
 		&i.CreatedAt,
 		&i.IngestedAt,
+		&i.TraceID,
+		&i.Metadata,
 	)
 	return i, err
 }
@@ -48,4 +54,6 @@ type CreateLogsParams struct {
 	LogLevel    string
 	Message     string
 	CreatedAt   pgtype.Timestamptz
+	TraceID     pgtype.Text
+	Metadata    []byte
 }

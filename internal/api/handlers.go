@@ -15,6 +15,8 @@ type LogPayload struct {
 	LogLevel    string             `json:"log_level"`
 	Message     string             `json:"message"`
 	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	TraceID     *string            `json:"trace_id,omitempty"`
+	Metadata    map[string]any     `json:"metadata,omitempty"`
 }
 
 func sendSampleLog(ctx context.Context, queries *database.Queries, payload LogPayload) error {
